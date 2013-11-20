@@ -28,6 +28,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         """
         when we receive some message we want some message handler..
         for this example i will just print message to console
+		-Bryan.
         """
         print "Client %s received a message : %s" % (self.id, message)
         
