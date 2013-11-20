@@ -75,6 +75,7 @@
 		37B9AF08183D4B6500816AB2 /* libicucore.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libicucore.dylib; path = usr/lib/libicucore.dylib; sourceTree = SDKROOT; };
 		37B9AF0A183D52D000816AB2 /* config.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = config.h; sourceTree = "<group>"; };
 		37B9AF0B183D629000816AB2 /* server.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = server.py; sourceTree = "<group>"; };
+		37B9AF0D183D6A5D00816AB2 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = text; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -109,6 +110,7 @@
 			isa = PBXGroup;
 			children = (
 				37B9AF0B183D629000816AB2 /* server.py */,
+				37B9AF0D183D6A5D00816AB2 /* README.md */,
 				37B9AEA6183D24CD00816AB2 /* DistributedSimulation */,
 				37B9AEC8183D24CD00816AB2 /* DistributedSimulationTests */,
 				37B9AE9F183D24CD00816AB2 /* Frameworks */,
