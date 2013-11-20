@@ -17,20 +17,38 @@
 
 @implementation DSViewController
 
+#pragma mark -
+#pragma mark UIViewController
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+	// Do any additional setup after loading the view, typically from a nib.
+	
+	// initialize web sockets and set delegates to self
+	controlSocket = [[SRWebSocket alloc] initWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"ws://WEBSOCKET_HOST:WEBSOCKET_PORT_CONTROL/"]]];
+	[controlSocket setDelegate:self];
+	
+	dataSocket = [[SRWebSocket alloc] initWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"ws://WEBSOCKET_HOST:WEBSOCKET_PORT_DATA/"]]];
+	[dataSocket setDelegate:self];
+	
+	// connect to websockets
+	[self connectWebsockets];
+	
+	// start getting location updates
+	[self startLocationUpdates];
+}
 
--(void)runSimulation:(id)sender {
-	NSLog(@"Starting simulation--doesn't actually do anything yet");
+- (void)didReceiveMemoryWarning
+{
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
 }
 
 #pragma mark -
-#pragma mark WebSockets
+#pragma mark Simulation Functions
 
--(BOOL)connectWebsockets {
-	return NO;
-}
-
--(void)disconnectWebsockets {
-	
+-(void)runSimulation:(id)sender {
+	NSLog(@"Starting simulation--doesn't actually do anything yet");
 }
 
 #pragma mark -
@@ -44,6 +62,17 @@
 	
 }
 
+#pragma mark -
+#pragma mark WebSockets
+
+-(void)connectWebsockets {
+	[controlSocket open];
+	[dataSocket open];
+}
+
+-(void)disconnectWebsockets {
+	
+}
 
 #pragma mark -
 #pragma mark SRWebSocketDelegate
@@ -63,30 +92,6 @@
 -(void)webSocketDidOpen:(SRWebSocket *)webSocket {
 	NSLog(@"Opened WebSocket");
 	[webSocket send:@"Hello"];
-}
-
-#pragma mark -
-#pragma mark UIViewController
-- (void)viewDidLoad
-{
-    [super viewDidLoad];
-	// Do any additional setup after loading the view, typically from a nib.
-	
-	// connect to websockets
-	NSLog(@"View Loaded");
-	SRWebSocket *sock = [[SRWebSocket alloc] initWithURL:[NSURL URLWithString:@"ws://wpa144134.wireless.mcgill.ca:8000"]];
-	[sock open];
-	[sock setDelegate:self];
-	
-
-	
-	// start getting location updates
-}
-
-- (void)didReceiveMemoryWarning
-{
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
 }
 
 @end

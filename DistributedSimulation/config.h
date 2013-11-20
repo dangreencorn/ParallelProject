@@ -9,6 +9,8 @@
 #ifndef DistributedSimulation_config_h
 #define DistributedSimulation_config_h
 
-
+#define WEBSOCKET_HOST wpa144134.wireless.mcgill.ca
+#define WEBSOCKET_PORT_CONTROL 9000
+#define WEBSOCKET_PORT_DATA 9001
 
 #endif
