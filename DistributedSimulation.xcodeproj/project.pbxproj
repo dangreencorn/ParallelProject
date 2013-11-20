@@ -63,23 +63,6 @@
 		37B9AECC183D24CD00816AB2 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		37B9AECE183D24CD00816AB2 /* DistributedSimulationTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DistributedSimulationTests.m; sourceTree = "<group>"; };
 		37B9AED8183D24ED00816AB2 /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
-		37B9AEDD183D3A8000816AB2 /* libUnittWebSocketClient.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libUnittWebSocketClient.a; sourceTree = "<group>"; };
-		37B9AEDF183D3A8000816AB2 /* libUnittWebSocketClient.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libUnittWebSocketClient.a; sourceTree = "<group>"; };
-		37B9AEE1183D3A8000816AB2 /* libUnittWebSocketClient.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libUnittWebSocketClient.a; sourceTree = "<group>"; };
-		37B9AEE3183D3A8000816AB2 /* libUnittWebSocketClient.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libUnittWebSocketClient.a; sourceTree = "<group>"; };
-		37B9AEE5183D3A8000816AB2 /* AsyncSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AsyncSocket.h; sourceTree = "<group>"; };
-		37B9AEE6183D3A8000816AB2 /* GCDAsyncSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCDAsyncSocket.h; sourceTree = "<group>"; };
-		37B9AEE7183D3A8000816AB2 /* HandshakeHeader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HandshakeHeader.h; sourceTree = "<group>"; };
-		37B9AEE8183D3A8000816AB2 /* MutableQueue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MutableQueue.h; sourceTree = "<group>"; };
-		37B9AEE9183D3A8000816AB2 /* NSData+Base64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSData+Base64.h"; sourceTree = "<group>"; };
-		37B9AEEA183D3A8000816AB2 /* WebSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WebSocket.h; sourceTree = "<group>"; };
-		37B9AEEB183D3A8000816AB2 /* WebSocket00.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WebSocket00.h; sourceTree = "<group>"; };
-		37B9AEEC183D3A8000816AB2 /* WebSocket07.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WebSocket07.h; sourceTree = "<group>"; };
-		37B9AEED183D3A8000816AB2 /* WebSocket08.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WebSocket08.h; sourceTree = "<group>"; };
-		37B9AEEE183D3A8000816AB2 /* WebSocket10.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WebSocket10.h; sourceTree = "<group>"; };
-		37B9AEEF183D3A8000816AB2 /* WebSocketConnectConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WebSocketConnectConfig.h; sourceTree = "<group>"; };
-		37B9AEF0183D3A8000816AB2 /* WebSocketFragment.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WebSocketFragment.h; sourceTree = "<group>"; };
-		37B9AEF1183D3A8000816AB2 /* WebSocketMessage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WebSocketMessage.h; sourceTree = "<group>"; };
 		37B9AEF6183D3BEC00816AB2 /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
 		37B9AEF7183D3BEC00816AB2 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		37B9AEFE183D4B2200816AB2 /* base64.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = base64.c; sourceTree = "<group>"; };
@@ -160,7 +143,6 @@
 			children = (
 				37B9AF0A183D52D000816AB2 /* config.h */,
 				37B9AEFD183D4B2200816AB2 /* SocketRocket */,
-				37B9AEDA183D3A8000816AB2 /* UnittWebSocketClient */,
 				37B9AEAF183D24CD00816AB2 /* DSAppDelegate.h */,
 				37B9AEB0183D24CD00816AB2 /* DSAppDelegate.m */,
 				37B9AEB2183D24CD00816AB2 /* Main_iPhone.storyboard */,
@@ -200,78 +182,6 @@
 				37B9AECB183D24CD00816AB2 /* InfoPlist.strings */,
 			);
 			name = "Supporting Files";
-			sourceTree = "<group>";
-		};
-		37B9AEDA183D3A8000816AB2 /* UnittWebSocketClient */ = {
-			isa = PBXGroup;
-			children = (
-				37B9AEDB183D3A8000816AB2 /* bin */,
-				37B9AEE4183D3A8000816AB2 /* include */,
-			);
-			path = UnittWebSocketClient;
-			sourceTree = "<group>";
-		};
-		37B9AEDB183D3A8000816AB2 /* bin */ = {
-			isa = PBXGroup;
-			children = (
-				37B9AEDC183D3A8000816AB2 /* Debug-iphoneos */,
-				37B9AEDE183D3A8000816AB2 /* Debug-iphonesimulator */,
-				37B9AEE0183D3A8000816AB2 /* Release-iphoneos */,
-				37B9AEE2183D3A8000816AB2 /* Release-iphonesimulator */,
-			);
-			path = bin;
-			sourceTree = "<group>";
-		};
-		37B9AEDC183D3A8000816AB2 /* Debug-iphoneos */ = {
-			isa = PBXGroup;
-			children = (
-				37B9AEDD183D3A8000816AB2 /* libUnittWebSocketClient.a */,
-			);
-			path = "Debug-iphoneos";
-			sourceTree = "<group>";
-		};
-		37B9AEDE183D3A8000816AB2 /* Debug-iphonesimulator */ = {
-			isa = PBXGroup;
-			children = (
-				37B9AEDF183D3A8000816AB2 /* libUnittWebSocketClient.a */,
-			);
-			path = "Debug-iphonesimulator";
-			sourceTree = "<group>";
-		};
-		37B9AEE0183D3A8000816AB2 /* Release-iphoneos */ = {
-			isa = PBXGroup;
-			children = (
-				37B9AEE1183D3A8000816AB2 /* libUnittWebSocketClient.a */,
-			);
-			path = "Release-iphoneos";
-			sourceTree = "<group>";
-		};
-		37B9AEE2183D3A8000816AB2 /* Release-iphonesimulator */ = {
-			isa = PBXGroup;
-			children = (
-				37B9AEE3183D3A8000816AB2 /* libUnittWebSocketClient.a */,
-			);
-			path = "Release-iphonesimulator";
-			sourceTree = "<group>";
-		};
-		37B9AEE4183D3A8000816AB2 /* include */ = {
-			isa = PBXGroup;
-			children = (
-				37B9AEE5183D3A8000816AB2 /* AsyncSocket.h */,
-				37B9AEE6183D3A8000816AB2 /* GCDAsyncSocket.h */,
-				37B9AEE7183D3A8000816AB2 /* HandshakeHeader.h */,
-				37B9AEE8183D3A8000816AB2 /* MutableQueue.h */,
-				37B9AEE9183D3A8000816AB2 /* NSData+Base64.h */,
-				37B9AEEA183D3A8000816AB2 /* WebSocket.h */,
-				37B9AEEB183D3A8000816AB2 /* WebSocket00.h */,
-				37B9AEEC183D3A8000816AB2 /* WebSocket07.h */,
-				37B9AEED183D3A8000816AB2 /* WebSocket08.h */,
-				37B9AEEE183D3A8000816AB2 /* WebSocket10.h */,
-				37B9AEEF183D3A8000816AB2 /* WebSocketConnectConfig.h */,
-				37B9AEF0183D3A8000816AB2 /* WebSocketFragment.h */,
-				37B9AEF1183D3A8000816AB2 /* WebSocketMessage.h */,
-			);
-			path = include;
 			sourceTree = "<group>";
 		};
 		37B9AEFD183D4B2200816AB2 /* SocketRocket */ = {
