@@ -29,6 +29,14 @@
 		37B9AF06183D4B2200816AB2 /* NSData+SRB64Additions.m in Sources */ = {isa = PBXBuildFile; fileRef = 37B9AF01183D4B2200816AB2 /* NSData+SRB64Additions.m */; };
 		37B9AF07183D4B2200816AB2 /* SRWebSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 37B9AF04183D4B2200816AB2 /* SRWebSocket.m */; };
 		37B9AF09183D4B6500816AB2 /* libicucore.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 37B9AF08183D4B6500816AB2 /* libicucore.dylib */; };
+		37B9AF17183D787100816AB2 /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 37B9AF0F183D787100816AB2 /* .gitignore */; };
+		37B9AF18183D787100816AB2 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 37B9AF10183D787100816AB2 /* README.md */; };
+		37B9AF19183D787100816AB2 /* server.py in Resources */ = {isa = PBXBuildFile; fileRef = 37B9AF11183D787100816AB2 /* server.py */; };
+		37B9AF1A183D787100816AB2 /* SimpleExampleServer.py in Resources */ = {isa = PBXBuildFile; fileRef = 37B9AF12183D787100816AB2 /* SimpleExampleServer.py */; };
+		37B9AF1B183D787100816AB2 /* SimpleHTTPSServer.py in Resources */ = {isa = PBXBuildFile; fileRef = 37B9AF13183D787100816AB2 /* SimpleHTTPSServer.py */; };
+		37B9AF1C183D787100816AB2 /* SimpleWebSocketServer.py in Resources */ = {isa = PBXBuildFile; fileRef = 37B9AF14183D787100816AB2 /* SimpleWebSocketServer.py */; };
+		37B9AF1D183D787100816AB2 /* SimpleWebSocketServer.pyc in Resources */ = {isa = PBXBuildFile; fileRef = 37B9AF15183D787100816AB2 /* SimpleWebSocketServer.pyc */; };
+		37B9AF1E183D787100816AB2 /* websocket.html in Resources */ = {isa = PBXBuildFile; fileRef = 37B9AF16183D787100816AB2 /* websocket.html */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -74,8 +82,15 @@
 		37B9AF04183D4B2200816AB2 /* SRWebSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SRWebSocket.m; sourceTree = "<group>"; };
 		37B9AF08183D4B6500816AB2 /* libicucore.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libicucore.dylib; path = usr/lib/libicucore.dylib; sourceTree = SDKROOT; };
 		37B9AF0A183D52D000816AB2 /* config.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = config.h; sourceTree = "<group>"; };
-		37B9AF0B183D629000816AB2 /* server.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = server.py; sourceTree = "<group>"; };
 		37B9AF0D183D6A5D00816AB2 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = text; path = README.md; sourceTree = "<group>"; };
+		37B9AF0F183D787100816AB2 /* .gitignore */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
+		37B9AF10183D787100816AB2 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.md; sourceTree = "<group>"; };
+		37B9AF11183D787100816AB2 /* server.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = server.py; sourceTree = "<group>"; };
+		37B9AF12183D787100816AB2 /* SimpleExampleServer.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = SimpleExampleServer.py; sourceTree = "<group>"; };
+		37B9AF13183D787100816AB2 /* SimpleHTTPSServer.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = SimpleHTTPSServer.py; sourceTree = "<group>"; };
+		37B9AF14183D787100816AB2 /* SimpleWebSocketServer.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = SimpleWebSocketServer.py; sourceTree = "<group>"; };
+		37B9AF15183D787100816AB2 /* SimpleWebSocketServer.pyc */ = {isa = PBXFileReference; lastKnownFileType = file; path = SimpleWebSocketServer.pyc; sourceTree = "<group>"; };
+		37B9AF16183D787100816AB2 /* websocket.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = websocket.html; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -109,7 +124,7 @@
 		37B9AE94183D24CD00816AB2 = {
 			isa = PBXGroup;
 			children = (
-				37B9AF0B183D629000816AB2 /* server.py */,
+				37B9AF0E183D787100816AB2 /* simpleWebsocket */,
 				37B9AF0D183D6A5D00816AB2 /* README.md */,
 				37B9AEA6183D24CD00816AB2 /* DistributedSimulation */,
 				37B9AEC8183D24CD00816AB2 /* DistributedSimulationTests */,
@@ -202,6 +217,21 @@
 			path = SocketRocket;
 			sourceTree = "<group>";
 		};
+		37B9AF0E183D787100816AB2 /* simpleWebsocket */ = {
+			isa = PBXGroup;
+			children = (
+				37B9AF0F183D787100816AB2 /* .gitignore */,
+				37B9AF10183D787100816AB2 /* README.md */,
+				37B9AF11183D787100816AB2 /* server.py */,
+				37B9AF12183D787100816AB2 /* SimpleExampleServer.py */,
+				37B9AF13183D787100816AB2 /* SimpleHTTPSServer.py */,
+				37B9AF14183D787100816AB2 /* SimpleWebSocketServer.py */,
+				37B9AF15183D787100816AB2 /* SimpleWebSocketServer.pyc */,
+				37B9AF16183D787100816AB2 /* websocket.html */,
+			);
+			path = simpleWebsocket;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -279,8 +309,16 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				37B9AF18183D787100816AB2 /* README.md in Resources */,
+				37B9AF1C183D787100816AB2 /* SimpleWebSocketServer.py in Resources */,
+				37B9AF17183D787100816AB2 /* .gitignore in Resources */,
+				37B9AF1A183D787100816AB2 /* SimpleExampleServer.py in Resources */,
+				37B9AF1E183D787100816AB2 /* websocket.html in Resources */,
+				37B9AF1B183D787100816AB2 /* SimpleHTTPSServer.py in Resources */,
 				37B9AEB7183D24CD00816AB2 /* Main_iPad.storyboard in Resources */,
 				37B9AEBC183D24CD00816AB2 /* Images.xcassets in Resources */,
+				37B9AF1D183D787100816AB2 /* SimpleWebSocketServer.pyc in Resources */,
+				37B9AF19183D787100816AB2 /* server.py in Resources */,
 				37B9AEB4183D24CD00816AB2 /* Main_iPhone.storyboard in Resources */,
 				37B9AEAB183D24CD00816AB2 /* InfoPlist.strings in Resources */,
 			);
