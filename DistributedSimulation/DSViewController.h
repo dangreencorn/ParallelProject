@@ -7,7 +7,26 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "SRWebSocket.h"
+#import "config.h"
 
-@interface DSViewController : UIViewController
+@interface DSViewController : UIViewController <SRWebSocketDelegate> {
+	IBOutlet UILabel *lat;
+	IBOutlet UILabel *lon;
+	IBOutlet UILabel *alt;
+	IBOutlet UILabel *error;
+	IBOutlet UILabel *connectionStatus;
+
+@private
+	SRWebSocket *controlSocket;
+	
+}
+
+-(IBAction)runSimulation:(id)sender;
+-(BOOL)connectWebsockets;
+-(void)disconnectWebsockets;
+
+-(void)startLocationUpdates;
+-(void)stopLocationUpdates;
 
 @end
