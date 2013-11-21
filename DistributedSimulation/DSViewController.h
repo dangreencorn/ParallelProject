@@ -10,6 +10,12 @@
 #import "SRWebSocket.h"
 #import "config.h"
 
+enum AppState {
+	notReady = 0,
+	ready = 1,
+	running = 2,
+	errorOccured = 3
+	};
 
 @interface DSViewController : UIViewController <SRWebSocketDelegate> {
 	IBOutlet UILabel *lat;
@@ -21,6 +27,7 @@
 @private
 	SRWebSocket *controlSocket;
 	SRWebSocket *dataSocket;
+	enum AppState state;
 	
 }
 
