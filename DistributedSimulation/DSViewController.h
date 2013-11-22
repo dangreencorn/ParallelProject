@@ -9,6 +9,7 @@
 #import <UIKit/UIKit.h>
 #import "SRWebSocket.h"
 #import "config.h"
+#import <CoreLocation/CoreLocation.h>
 
 enum AppState {
 	notReady = 0,
@@ -17,7 +18,7 @@ enum AppState {
 	errorOccured = 3
 	};
 
-@interface DSViewController : UIViewController <SRWebSocketDelegate> {
+@interface DSViewController : UIViewController <SRWebSocketDelegate, CLLocationManagerDelegate> {
 	IBOutlet UILabel *lat;
 	IBOutlet UILabel *lon;
 	IBOutlet UILabel *alt;
@@ -29,9 +30,14 @@ enum AppState {
 	SRWebSocket *dataSocket;
 	enum AppState state;
 	
+	CLLocationManager *locationManager;
+	CLLocation *location;
+	CLLocation *experimentLocation;
+	
 }
 
--(IBAction)runSimulation:(id)sender;
+-(IBAction)triggerSimulation:(id)sender;
+-(void)doComputation;
 
 -(void)connectWebsockets;
 -(void)disconnectWebsockets;

@@ -87,11 +87,11 @@
                                     <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
                                 <connections>
-                                    <action selector="runSimulation:" destination="vXZ-lx-hvc" eventType="touchUpInside" id="A4U-tT-pY1"/>
+                                    <action selector="triggerSimulation:" destination="vXZ-lx-hvc" eventType="touchUpInside" id="CRw-Rr-K3m"/>
                                 </connections>
                             </button>
-                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Not Connected" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ytw-Bf-p22">
-                                <rect key="frame" x="102" y="206" width="117" height="21"/>
+                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Not Connected" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ytw-Bf-p22">
+                                <rect key="frame" x="20" y="206" width="280" height="21"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <nil key="highlightedColor"/>
@@ -105,7 +105,6 @@
                         <outlet property="error" destination="CDM-DC-Tt0" id="3x5-FU-3N5"/>
                         <outlet property="lat" destination="TSS-47-xeF" id="0ey-db-LAd"/>
                         <outlet property="lon" destination="4ZT-On-y0F" id="06u-Cd-Kwy"/>
-                        <outlet property="view" destination="kh9-bI-dsS" id="ZNv-Gr-2s9"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="x5A-6p-PRh" sceneMemberID="firstResponder"/>

@@ -26,13 +26,20 @@
 	
 	// initialize appstate
 	state = notReady;
+	connectionStatus.text = @"Not Connected";
 	
 	// initialize web sockets and set delegates to self
-	controlSocket = [[SRWebSocket alloc] initWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"ws://WEBSOCKET_HOST:WEBSOCKET_PORT_CONTROL/"]]];
+	NSString *control = [NSString stringWithFormat:@"ws://%@:%@/", WEBSOCKET_HOST, WEBSOCKET_PORT_CONTROL];
+	controlSocket = [[SRWebSocket alloc] initWithURL:[NSURL URLWithString:control]];
 	[controlSocket setDelegate:self];
 	
-	dataSocket = [[SRWebSocket alloc] initWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"ws://WEBSOCKET_HOST:WEBSOCKET_PORT_DATA/"]]];
+	NSLog(@"Control %@", control);
+	
+	NSString *data = [NSString stringWithFormat:@"ws://%@:%@/", WEBSOCKET_HOST, WEBSOCKET_PORT_DATA];
+	dataSocket = [[SRWebSocket alloc] initWithURL:[NSURL URLWithString:data]];
 	[dataSocket setDelegate:self];
+	
+	NSLog(@"Data %@", data);
 	
 	// connect to websockets
 	[self connectWebsockets];
@@ -50,8 +57,28 @@
 #pragma mark -
 #pragma mark Simulation Functions
 
--(void)runSimulation:(id)sender {
-	NSLog(@"Starting simulation--doesn't actually do anything yet");
+-(void)triggerSimulation:(id)sender {
+	NSLog(@"Triggering simulation");
+	[controlSocket send:@"START"];
+}
+	
+-(void)doComputation {
+	NSLog(@"executing simulation");
+	
+	// send our location to all devices
+	[self sendLocation];
+	
+	// reset all state variables
+	// myLocation
+	
+}
+	
+-(void)sendLocation {
+	// get last updated location
+	
+	// build location string for data passing
+	NSString *locationString = [NSString stringWithFormat:@""];
+	[dataSocket send:locationString];
 }
 
 -(BOOL)socketStateOK {
@@ -66,23 +93,50 @@
 #pragma mark Location Updates
 
 -(void)startLocationUpdates {
+	// Create the location manager if this object does not
+    // already have one.
+    if (nil == locationManager)
+	locationManager = [[CLLocationManager alloc] init];
 	
+    locationManager.delegate = self;
+    locationManager.desiredAccuracy = kCLLocationAccuracyBest;
+	
+    // Set a movement threshold for new events.
+    locationManager.distanceFilter = kCLDistanceFilterNone;
+    [locationManager startUpdatingLocation];
 }
 
 -(void)stopLocationUpdates {
-	
+	[locationManager stopUpdatingLocation];
 }
 
+#pragma mark -
+#pragma mark CLLocationManagerDelegate
+	
+-(void) locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray *)locations {
+	//get most recent location
+	location = [locations lastObject];
+	
+	lat.text = [NSString stringWithFormat:@"%f", location.coordinate.latitude ];
+	lon.text = [NSString stringWithFormat:@"%f", location.coordinate.longitude ];
+	alt.text = [NSString stringWithFormat:@"%f", location.altitude ];
+	error.text = [NSString stringWithFormat:@"%f", location.horizontalAccuracy ];
+}
+	
+	
 #pragma mark -
 #pragma mark WebSockets
 
 -(void)connectWebsockets {
+	NSLog(@"Attempting to open WebSockets");
 	[controlSocket open];
 	[dataSocket open];
 }
 
 -(void)disconnectWebsockets {
-	
+	NSLog(@"Closing WebSockets");
+	[controlSocket close];
+	[dataSocket close];
 }
 
 #pragma mark -
@@ -95,6 +149,7 @@
 	} else {
 		state = notReady;
 	}
+	connectionStatus.text = @"Connection Failed";
 }
 
 -(void)webSocket:(SRWebSocket *)webSocket didFailWithError:(NSError *)error {
@@ -104,18 +159,21 @@
 	} else {
 		state = notReady;
 	}
+	connectionStatus.text = @"Connection Failed";
 }
 
 -(void)webSocket:(SRWebSocket *)webSocket didReceiveMessage:(id)message {
-	NSLog(@"Message Received: %@", message);
+	// cast message to NSString
+	NSString *msg = (NSString*) message;
 	
 	// determine if it's a control or data transfer message
 	if (webSocket == controlSocket) {
 		// control message
+		NSLog(@"CONTROL MESSAGE: %@", msg);
 		
 	} else if (webSocket == dataSocket) {
 		// data message
-		
+		NSLog(@"DATA MESSAGE: %@", msg);
 	}
 }
 
@@ -123,6 +181,7 @@
 	NSLog(@"Opened WebSocket");
 	if ([self socketStateOK] && state != errorOccured) {
 		state = ready;
+		connectionStatus.text = @"Connected";
 	}
 	
 }
