@@ -26,10 +26,29 @@ enum AppState {
 	IBOutlet UILabel *connectionStatus;
 
 @private
+	//sockets and app state
 	SRWebSocket *controlSocket;
 	SRWebSocket *dataSocket;
 	enum AppState state;
 	
+	// experiment vars
+	NSInteger numClients;
+	NSInteger dataComputed;
+	
+	NSNumber *vectorLat;
+	NSNumber *vectorLon;
+	NSNumber *vectorAlt;
+	
+	// experiment times
+	NSDate *firstData;
+	NSDate *startSignal;
+	
+	NSDate *computationStart;
+	NSDate *computationEnd;
+	NSDate *computationAvg;
+	NSInteger computationN;
+	
+	// location vars
 	CLLocationManager *locationManager;
 	CLLocation *location;
 	CLLocation *experimentLocation;
@@ -37,7 +56,7 @@ enum AppState {
 }
 
 -(IBAction)triggerSimulation:(id)sender;
--(void)doComputation;
+-(void)doComputationLat:(NSNumber*)latitude lon:(NSNumber*)longitude alt:(NSNumber*)altitude;
 
 -(void)connectWebsockets;
 -(void)disconnectWebsockets;

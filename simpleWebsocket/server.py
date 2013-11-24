@@ -17,6 +17,8 @@ resultsReceived = []
 numClientsControl = 0
 numClientsData = 0
 
+server = None
+
 # saveResults -- saves the experiment data to a file
 # TODO: implementation
 def saveResults():
@@ -39,11 +41,21 @@ def saveResults():
 def reset():
 	# the number of connected cliends will remain accurate
 	# we do not ever reset them
+	global experimentType
+	global resultsReceived
+	global dataReceived
+	global startTime
+	global endTime
+	global server
 	experimentType = ""
 	resultsReceived = []
 	dataReceived = 0
 	startTime = None
 	endTime = None
+
+	for conn in server.connections.itervalues():
+		conn.sendMessage(str("{'command':'RESET'}"))
+
 
 
 # not used anymore -- GOOD Example code
@@ -70,6 +82,10 @@ class ControlSocket(WebSocket):
 	def handleMessage(self):
 		global numClientsControl
 		global startTime
+		global server
+		
+		server = self.server
+		
 		if self.data is None:
 			self.data = ''
 		try:
@@ -103,7 +119,7 @@ class ControlSocket(WebSocket):
 		if startTime is not None:
 			print "---ERROR---\nClient disconnected (control) mid-experiment\n-----------"
 			for conn in self.server.connections.itervalues():
-				conn.sendMessage("RESET")
+				conn.sendMessage("{\"command\":\"RESET\"}")
 			startTime = None
 
 # logic for handling the data socket
@@ -119,6 +135,7 @@ class DataSocket(WebSocket):
 			self.data = ''
 		
 		print "DATA MESSAGE ----------------------"
+		print self.data
 		
 		if startTime is not None and dataReceived < numClientsData:
 			dataReceived += 1
@@ -151,7 +168,6 @@ class DataSocket(WebSocket):
 		if startTime is not None:
 			print "---ERROR---\nClient disconnected (data) mid-experiment\n-----------"
 			startTime = None
-
 
 serverControl = SimpleWebSocketServer('', 9000, ControlSocket)
 serverData = SimpleWebSocketServer('', 9001, DataSocket)

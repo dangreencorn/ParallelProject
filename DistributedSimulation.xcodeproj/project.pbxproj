@@ -489,13 +489,7 @@
 					"$(project_directory)",
 				);
 				INFOPLIST_FILE = "DistributedSimulation/DistributedSimulation-Info.plist";
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"/Users/dan/Documents/University/ECSE\\ 420/Term\\ Project/DistributedSimulation/DistributedSimulation/UnittWebSocketClient/bin/Debug-iphoneos",
-					"/Users/dan/Documents/University/ECSE\\ 420/Term\\ Project/DistributedSimulation/DistributedSimulation/UnittWebSocketClient/bin/Debug-iphonesimulator",
-					"/Users/dan/Documents/University/ECSE\\ 420/Term\\ Project/DistributedSimulation/DistributedSimulation/UnittWebSocketClient/bin/Release-iphoneos",
-					"/Users/dan/Documents/University/ECSE\\ 420/Term\\ Project/DistributedSimulation/DistributedSimulation/UnittWebSocketClient/bin/Release-iphonesimulator",
-				);
+				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};
@@ -514,13 +508,7 @@
 					"$(project_directory)",
 				);
 				INFOPLIST_FILE = "DistributedSimulation/DistributedSimulation-Info.plist";
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"/Users/dan/Documents/University/ECSE\\ 420/Term\\ Project/DistributedSimulation/DistributedSimulation/UnittWebSocketClient/bin/Debug-iphoneos",
-					"/Users/dan/Documents/University/ECSE\\ 420/Term\\ Project/DistributedSimulation/DistributedSimulation/UnittWebSocketClient/bin/Debug-iphonesimulator",
-					"/Users/dan/Documents/University/ECSE\\ 420/Term\\ Project/DistributedSimulation/DistributedSimulation/UnittWebSocketClient/bin/Release-iphoneos",
-					"/Users/dan/Documents/University/ECSE\\ 420/Term\\ Project/DistributedSimulation/DistributedSimulation/UnittWebSocketClient/bin/Release-iphonesimulator",
-				);
+				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};

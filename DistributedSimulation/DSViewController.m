@@ -53,14 +53,29 @@
 	[controlSocket send:jsonString];
 }
 	
--(void)doComputation {
-	NSLog(@"executing simulation");
-	// our location should have been sent already
+-(void)doComputationLat:(NSNumber*)latitude lon:(NSNumber*)longitude alt:(NSNumber*)altitude {
+	NSLog(@"Computing Force---");
+	
+	//get start time
+	computationStart = [NSDate date];
+	
+	//
 	
 	
 	
+	// get the end time
+	computationEnd = [NSDate date];
 	
-	// send computed results to server
+	dataComputed++;
+	if (dataComputed == numClients - 1) {
+		// send computed results to server
+		[dataSocket send:@"RESULT STRING"];
+	}
+	
+	
+}
+
+-(void)sendResults {
 	// - build message
 	NSString *result = @"{\"x\":12345.7,\"y\":12345.7,\"z\":12345.7}";
 	// - send to server
@@ -68,7 +83,6 @@
 	
 	// reset all state variables
 	// - myLocation
-	
 }
 	
 -(void)sendLocation {
@@ -115,6 +129,25 @@
 	}
 	
 	return controlDictionary;
+}
+
+-(void)resetApp {
+	// shut down everything
+	[self disconnectWebsockets];
+	[self stopLocationUpdates];
+	
+	// reset app state
+	state = notReady;
+	numClients = 0;
+	dataComputed = 0;
+	
+	vectorLat = Nil;
+	vectorLon = Nil;
+	vectorAlt = Nil;
+	
+	// re-initialize websockets
+	[self startLocationUpdates];
+	[self connectWebsockets];
 }
 
 #pragma mark -
@@ -175,8 +208,12 @@
 
 -(void)disconnectWebsockets {
 	NSLog(@"Closing WebSockets");
-	[controlSocket close];
-	[dataSocket close];
+	if (controlSocket) {
+		[controlSocket close];
+	}
+	if (dataSocket) {
+		[dataSocket close];
+	}
 }
 
 #pragma mark -
@@ -218,15 +255,23 @@
 		NSString *commandString = [controlDictionary objectForKey:@"command"];
 		NSLog(@"COMMAND: %@", controlDictionary);
 		if ([commandString isEqualToString:@"START"]) {
-			[self sendLocation];
+			dataComputed = 0;
+			numClients = [[controlDictionary objectForKey:@"numClients"] integerValue];
 			state = running;
-		} else if ([commandString isEqualToString:@"RESET"]) {
 			
+			[self sendLocation];
+		} else if ([commandString isEqualToString:@"RESET"]) {
+			[self resetApp];
 		}
 		
 	} else if (webSocket == dataSocket) {
 		// data message
 		NSLog(@"DATA MESSAGE: %@", msg);
+		NSNumber *latitude = [controlDictionary objectForKey:@"lat"];
+		NSNumber *longitude = [controlDictionary objectForKey:@"lon"];
+		NSNumber *altitude = [controlDictionary objectForKey:@"alt"];
+		
+		[self doComputationLat:latitude lon:longitude alt:altitude];
 	}
 }
 
