@@ -3,6 +3,7 @@
 from SimpleWebSocketServer import WebSocket, SimpleWebSocketServer
 import time
 import thread
+import json
 
 startTime = None
 endTime = None
@@ -19,12 +20,30 @@ numClientsData = 0
 # saveResults -- saves the experiment data to a file
 # TODO: implementation
 def saveResults():
-	pass
+	global startTime
+	global endTime
+	global resultsReceived
+	print "--------------------------------------------------------"
+	print "-- RESULTS ---------------------------------------------"
+	print "--------------------------------------------------------"
+	print "Start Time: %s" % startTime
+	print "End Time:   %s" % endTime
+	print "--------------------------------------------------------"
+	print "Locations:"
+	# loop over all locations
+	for data in resultsReceived:
+		print data
+	print "--------------------------------------------------------"
 
 # reset -- resets startTime, endTime, dataReceived, experimentType, results received
-# TODO: implementation
 def reset():
-	pass
+	# the number of connected cliends will remain accurate
+	# we do not ever reset them
+	experimentType = ""
+	resultsReceived = []
+	dataReceived = 0
+	startTime = None
+	endTime = None
 
 
 # not used anymore -- GOOD Example code
@@ -53,14 +72,20 @@ class ControlSocket(WebSocket):
 		global startTime
 		if self.data is None:
 			self.data = ''
+		try:
+			data = json.loads(str(self.data))
+			print data
+		except Exception:
+			print "Exception"
 
-		if self.data == 'START':
+		if data['command'] == 'START':
 			startTime = time.time()
+			data['numClients'] = numClientsControl
 			print "%s Starting Experiment with %s devices" % (startTime, numClientsControl)
 
 		# forward message to all devices (including origin device)
 		for conn in self.server.connections.itervalues():
-			conn.sendMessage(str(self.data))
+			conn.sendMessage(str(data))
 
 	def handleConnected(self):
 		global numClientsControl
@@ -93,9 +118,12 @@ class DataSocket(WebSocket):
 		if self.data is None:
 			self.data = ''
 		
+		print "DATA MESSAGE ----------------------"
+		
 		if startTime is not None and dataReceived < numClientsData:
 			dataReceived += 1
 			print "Have data from %s devices" % dataReceived
+			print "Data: %s" % str(self.data)
 			# forward message to all devices (except origin device)
 			for conn in self.server.connections.itervalues():
 				if conn != self:
@@ -103,7 +131,7 @@ class DataSocket(WebSocket):
 		elif startTime is not None and dataReceived == numClientsData:
 			resultsReceived.append(self.data)
 			if len(resultsReceived) == numClientsData:
-				endTime = time()
+				endTime = time.time()
 				print "%s Experiment complete" % endTime
 				saveResults()
 				reset()

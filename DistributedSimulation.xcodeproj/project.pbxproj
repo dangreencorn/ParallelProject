@@ -128,8 +128,8 @@
 				37B9AF0D183D6A5D00816AB2 /* README.md */,
 				37B9AEA6183D24CD00816AB2 /* DistributedSimulation */,
 				37B9AEC8183D24CD00816AB2 /* DistributedSimulationTests */,
-				37B9AE9F183D24CD00816AB2 /* Frameworks */,
 				37B9AE9E183D24CD00816AB2 /* Products */,
+				37B9AE9F183D24CD00816AB2 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -587,6 +587,7 @@
 				37B9AED4183D24CD00816AB2 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		37B9AED5183D24CD00816AB2 /* Build configuration list for PBXNativeTarget "DistributedSimulationTests" */ = {
 			isa = XCConfigurationList;
@@ -595,6 +596,7 @@
 				37B9AED7183D24CD00816AB2 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
