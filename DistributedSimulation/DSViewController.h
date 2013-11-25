@@ -43,10 +43,7 @@ enum AppState {
 	NSDate *firstData;
 	NSDate *startSignal;
 	
-	NSDate *computationStart;
-	NSDate *computationEnd;
-	NSDate *computationAvg;
-	NSInteger computationN;
+	NSTimeInterval computationAvg;
 	
 	// location vars
 	CLLocationManager *locationManager;

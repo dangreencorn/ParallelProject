@@ -56,20 +56,26 @@
 -(void)doComputationLat:(NSNumber*)latitude lon:(NSNumber*)longitude alt:(NSNumber*)altitude {
 	NSLog(@"Computing Force---");
 	
+	//get timestamp if first data
+	if (dataComputed == 0) {
+		firstData = [NSDate date];
+	}
+	dataComputed++;
 	//get start time
-	computationStart = [NSDate date];
+	NSDate *computationStart = [NSDate date];
 	
-	//
-	
-	
+	// ****************************
+	// DO COMPUTATION
+	// ****************************
 	
 	// get the end time
-	computationEnd = [NSDate date];
+	NSDate *computationEnd = [NSDate date];
 	
-	dataComputed++;
+	// add to computation average
+	computationAvg += [computationEnd timeIntervalSinceDate:computationStart];
+	
 	if (dataComputed == numClients - 1) {
-		// send computed results to server
-		[dataSocket send:@"RESULT STRING"];
+		[self sendResults];
 	}
 	
 	
@@ -77,9 +83,26 @@
 
 -(void)sendResults {
 	// - build message
-	NSString *result = @"{\"x\":12345.7,\"y\":12345.7,\"z\":12345.7}";
-	// - send to server
-	[dataSocket send:result];
+	// get times for result string
+	NSDate *endDate = [NSDate date];
+	NSTimeInterval timeSinceData = [endDate timeIntervalSinceDate:firstData];
+	NSTimeInterval timeSinceStart = [endDate timeIntervalSinceDate:startSignal];
+	
+	computationAvg /= dataComputed;
+	
+	// send computed results to server
+	NSString *resultString = [NSString stringWithFormat:@"{'vector':{'x':%@,'y':%@,'z':%@}, 'origin':{'x':%f,'y':%f,'z':%f}, 'times':{'timeSinceStart':%f, 'timeSinceData':%f, 'computationAvg':%f}, 'deviceName':'%@'}",
+							  vectorLat,
+							  vectorLon,
+							  vectorAlt,
+							  experimentLocation.coordinate.latitude,
+							  experimentLocation.coordinate.longitude,
+							  experimentLocation.altitude,
+							  timeSinceStart,
+							  timeSinceData,
+							  computationAvg,
+							  [UIDevice currentDevice].name ];
+	[dataSocket send:resultString];
 	
 	// reset all state variables
 	// - myLocation
@@ -255,11 +278,17 @@
 		NSString *commandString = [controlDictionary objectForKey:@"command"];
 		NSLog(@"COMMAND: %@", controlDictionary);
 		if ([commandString isEqualToString:@"START"]) {
-			dataComputed = 0;
+			startSignal = [NSDate date];
 			numClients = [[controlDictionary objectForKey:@"numClients"] integerValue];
 			state = running;
 			
 			[self sendLocation];
+			
+			//special case that we computed all other locations before sending receiving start
+			if (dataComputed == numClients -1) {
+				// send our result string
+				[self sendResults];
+			}
 		} else if ([commandString isEqualToString:@"RESET"]) {
 			[self resetApp];
 		}
