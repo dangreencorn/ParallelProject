@@ -37,20 +37,46 @@ def saveResults():
 	global endTime
 	global resultsReceived
 	print "--------------------------------------------------------"
-	print "-- RESULTS ---------------------------------------------"
+	print "-- RESULTS - %s" % experimentType
 	print "--------------------------------------------------------"
 	print "Start Time: %s" % startTime
 	print "Start Time: %s" % startFinishedSendingTime
 	print "End Time:   %s" % endTime
 	print "--------------------------------------------------------"
-	print "Locations:"
+	print "Results by Device:"
 	# loop over all locations
 	for data in resultsReceived:
-		print data
 		# get the data in JSON format
 		try:
 			data = json.loads(str(data))
-			print data
+			if experimentType == "SERIAL":
+				print "-- %s -------------------------------------" % data['deviceName']
+				print "   | startToAllData:        %f" % data['startToAllData']
+				print "   | firstDataToAllData:    %f" % data['firstDataToAllData']
+				print "   | startToEnd:            %f" % data['startToEnd']
+				print "   | dataToEnd:             %f" % data['dataToEnd']
+				print "   | time N-1 computations: %f" % data['timeOthers']
+				print "   |- Vectors -------------------------------------"
+				
+				
+				for result in data['Results']:
+					print "   | vector -> x: %f y: %f z: %f | origin -> x: %f y: %f z: %f |" % (result['vector']['x'], result['vector']['y'], result['vector']['z'], result['origin']['x'], result['origin']['y'], result['origin']['z']),
+					if result.has_key('time'):
+						print " time: %f" % result['time']
+					else:
+						print ""
+			elif experimentType == "DISTRIBUTED":
+				print "-- %s -------------------------------------" % data['deviceName']
+				print "   | startToAllData:     %f" % data['startToAllData']
+				print "   | firstDataToAllData: %f" % data['firstDataToAllData']
+				print "   | startToEnd:         %f" % data['startToEnd']
+				print "   | dataToEnd:          %f" % data['dataToEnd']
+				print "   | avgComputationTime: %f (time to compute influence of one other body)" % data['avgComputationTime']
+				print "   |- Vector --------------------------------------"
+				print "   | vector -> x: %f y: %f z: %f | origin -> x: %f y: %f z: %f |" % (data['vector']['x'], data['vector']['y'], data['vector']['z'], data['origin']['x'], data['origin']['y'], data['origin']['z'])
+				
+				
+				
 		except Exception:
 			print "Exception"
 	print "--------------------------------------------------------"
@@ -102,6 +128,7 @@ class ControlSocket(WebSocket):
 		global numClientsControl
 		global startTime
 		global server
+		global experimentType
 		
 		server = self.server
 		
@@ -121,6 +148,8 @@ class ControlSocket(WebSocket):
 			# record the current time as the start of the experiment
 			startTime = time.time()
 			data['numClients'] = numClientsControl
+			experimentType = data['experimentType']
+			
 			print "%s Starting Experiment with %s devices" % (startTime, numClientsControl)
 			
 			# forward the start message to all devices (including origin device) to signal them to snapshot data and perform their calculations

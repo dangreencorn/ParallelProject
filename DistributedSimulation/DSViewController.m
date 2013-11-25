@@ -231,7 +231,9 @@
 		resultString = [resultString stringByAppendingString:@","];
 		resultString = [resultString stringByAppendingString:str];
 	}
-	resultString = [resultString stringByAppendingString:@"]}"];
+	resultString = [resultString stringByAppendingString:@"]"];
+	NSString *timeString = [NSString stringWithFormat:@", \"deviceName\":\"%@\", \"timeOthers\": -1, \"dataToEnd\": -1, \"startToEnd\": -1, \"firstDataToAllData\": -1, \"startToAllData\": -1}", [UIDevice currentDevice].name];
+	resultString = [resultString stringByAppendingString:timeString];
 	[dataSocket send:resultString];
 }
 
@@ -245,7 +247,7 @@
 	computationAvg /= dataComputed;
 	
 	// send computed results to server
-	NSString *resultString = [NSString stringWithFormat:@"{\"vector\":{\"x\":%f,\"y\":%f,\"z\":%f}, \"origin\":{\"x\":%f,\"y\":%f,\"z\":%f}, \"times\":{\"timeSinceStart\":%f, \"timeSinceData\":%f, \"computationAvg\":%f}, \"deviceName\":\"%@\"}",
+	NSString *resultString = [NSString stringWithFormat:@"{\"vector\":{\"x\":%f,\"y\":%f,\"z\":%f}, \"origin\":{\"x\":%f,\"y\":%f,\"z\":%f}, \"startToEnd\":%f, \"dataToEnd\":%f, \"avgComputationTime\":%f, \"startToAllData\": -1, \"firstDataToAllData\": -1, \"deviceName\":\"%@\"}",
 							  vectorLat,
 							  vectorLon,
 							  vectorAlt,
