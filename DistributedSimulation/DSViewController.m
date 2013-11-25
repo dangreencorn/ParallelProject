@@ -53,7 +53,7 @@
 	[controlSocket send:jsonString];
 }
 	
--(void)doComputationLat:(NSNumber*)latitude lon:(NSNumber*)longitude alt:(NSNumber*)altitude {
+-(void)doComputationLat:(NSNumber*)latitude lon:(NSNumber*)longitude alt:(NSNumber*)altitude gpsError:(NSNumber*)gpsError{
 	NSLog(@"Computing Force---");
 	
 	//get timestamp if first data
@@ -64,9 +64,40 @@
 	//get start time
 	NSDate *computationStart = [NSDate date];
 	
-	// ****************************
-	// DO COMPUTATION
-	// ****************************
+	// get the coords for deltas
+	CLLocationCoordinate2D coordsX;
+	coordsX.latitude = [latitude doubleValue];
+	coordsX.longitude = experimentLocation.coordinate.longitude;
+	
+	CLLocationCoordinate2D coordsY;
+	coordsY.latitude = experimentLocation.coordinate.latitude;
+	coordsY.longitude = [longitude doubleValue];
+	
+	
+	// get points for deltas in (x, y, z) ~ (lat, lon, alt)
+	CLLocation *otherPointX = [[CLLocation alloc] initWithCoordinate:coordsX altitude:experimentLocation.altitude horizontalAccuracy:[gpsError doubleValue] verticalAccuracy:0 timestamp:[NSDate date]];
+	CLLocation *otherPointY = [[CLLocation alloc] initWithCoordinate:coordsY altitude:experimentLocation.altitude horizontalAccuracy:[gpsError doubleValue] verticalAccuracy:0 timestamp:[NSDate date]];
+	
+	// get deltas
+	CLLocationDistance distX = [experimentLocation distanceFromLocation:otherPointX];
+	CLLocationDistance distY = [experimentLocation distanceFromLocation:otherPointY];
+	if ([latitude doubleValue] < experimentLocation.coordinate.latitude) {
+		distX *= -1;
+	}
+	if ([longitude doubleValue] < experimentLocation.coordinate.longitude) {
+		distY *= -1;
+	}
+	CLLocationDistance distZ = [altitude doubleValue] - experimentLocation.altitude;
+	
+	NSLog(@"\nDistX: %f\nDistY: %f\nDistZ: %f\n", distX, distY, distZ);
+	// get magnitude and total distance
+	double dist = sqrt(distX * distX + distY * distY + distZ * distZ);
+	double magnitude = G_CONST * 1000 * 1000 / experimentLocation.horizontalAccuracy  / [gpsError doubleValue] / (dist * dist);
+	
+	// update vectors
+	vectorLat += magnitude * distX / dist;
+	vectorLon += magnitude * distY / dist;
+	vectorAlt += magnitude * distZ / dist;
 	
 	// get the end time
 	NSDate *computationEnd = [NSDate date];
@@ -91,7 +122,7 @@
 	computationAvg /= dataComputed;
 	
 	// send computed results to server
-	NSString *resultString = [NSString stringWithFormat:@"{'vector':{'x':%@,'y':%@,'z':%@}, 'origin':{'x':%f,'y':%f,'z':%f}, 'times':{'timeSinceStart':%f, 'timeSinceData':%f, 'computationAvg':%f}, 'deviceName':'%@'}",
+	NSString *resultString = [NSString stringWithFormat:@"{'vector':{'x':%f,'y':%f,'z':%f}, 'origin':{'x':%f,'y':%f,'z':%f}, 'times':{'timeSinceStart':%f, 'timeSinceData':%f, 'computationAvg':%f}, 'deviceName':'%@'}",
 							  vectorLat,
 							  vectorLon,
 							  vectorAlt,
@@ -116,10 +147,11 @@
 	NSNumber *numLat = [NSNumber numberWithDouble:experimentLocation.coordinate.latitude];
 	NSNumber *numLon = [NSNumber numberWithDouble:experimentLocation.coordinate.longitude];
 	NSNumber *numAlt = [NSNumber numberWithDouble:experimentLocation.altitude];
+	NSNumber *numGps = [NSNumber numberWithDouble:experimentLocation.horizontalAccuracy];
 	
 	NSDictionary *locationDictionary = [[NSDictionary alloc] initWithObjectsAndKeys: numLat, @"lat",
 										numLon, @"lon",
-										numAlt, @"alt", nil];
+										numAlt, @"alt", numGps, @"gpsError", nil];
 	NSData *jsonData = [NSJSONSerialization dataWithJSONObject:locationDictionary options:0 error:nil];
 	NSString *locationString = [[NSString alloc] initWithBytes:[jsonData bytes] length:[jsonData length] encoding:NSUTF8StringEncoding];
 	[dataSocket send:locationString];
@@ -157,6 +189,7 @@
 -(void)resetApp {
 	// shut down everything
 	[self disconnectWebsockets];
+	
 	[self stopLocationUpdates];
 	
 	// reset app state
@@ -164,9 +197,9 @@
 	numClients = 0;
 	dataComputed = 0;
 	
-	vectorLat = Nil;
-	vectorLon = Nil;
-	vectorAlt = Nil;
+	vectorLat = 0;
+	vectorLon = 0;
+	vectorAlt = 0;
 	
 	// re-initialize websockets
 	[self startLocationUpdates];
@@ -212,21 +245,28 @@
 #pragma mark WebSockets
 
 -(void)connectWebsockets {
-	// initialize web sockets and set delegates to self
-	NSString *control = [NSString stringWithFormat:@"ws://%@:%@/", WEBSOCKET_HOST, WEBSOCKET_PORT_CONTROL];
-	controlSocket = [[SRWebSocket alloc] initWithURL:[NSURL URLWithString:control]];
-	[controlSocket setDelegate:self];
-	NSLog(@"Control %@", control);
 	
-	NSString *data = [NSString stringWithFormat:@"ws://%@:%@/", WEBSOCKET_HOST, WEBSOCKET_PORT_DATA];
-	dataSocket = [[SRWebSocket alloc] initWithURL:[NSURL URLWithString:data]];
-	[dataSocket setDelegate:self];
-	NSLog(@"Data %@", data);
+	if (!controlSocket || controlSocket.readyState != SR_OPEN || state == notReady) {
+		// initialize web sockets and set delegates to self
+		NSString *control = [NSString stringWithFormat:@"ws://%@:%@/", WEBSOCKET_HOST, WEBSOCKET_PORT_CONTROL];
+		controlSocket = [[SRWebSocket alloc] initWithURL:[NSURL URLWithString:control]];
+		[controlSocket setDelegate:self];
+		NSLog(@"Control %@", control);
+	}
+	
+	if (!dataSocket || dataSocket.readyState != SR_OPEN || state == notReady) {
+		NSString *data = [NSString stringWithFormat:@"ws://%@:%@/", WEBSOCKET_HOST, WEBSOCKET_PORT_DATA];
+		dataSocket = [[SRWebSocket alloc] initWithURL:[NSURL URLWithString:data]];
+		[dataSocket setDelegate:self];
+		NSLog(@"Data %@", data);
+	}
 	
 	// attempt to open the sockets
 	NSLog(@"Attempting to open WebSockets");
-	[controlSocket open];
-	[dataSocket open];
+	if (controlSocket.readyState != SR_OPEN)
+		[controlSocket open];
+	if (dataSocket.readyState != SR_OPEN)
+		[dataSocket open];
 }
 
 -(void)disconnectWebsockets {
@@ -299,8 +339,9 @@
 		NSNumber *latitude = [controlDictionary objectForKey:@"lat"];
 		NSNumber *longitude = [controlDictionary objectForKey:@"lon"];
 		NSNumber *altitude = [controlDictionary objectForKey:@"alt"];
+		NSNumber *gpsErr = [controlDictionary objectForKey:@"gpsError"];
 		
-		[self doComputationLat:latitude lon:longitude alt:altitude];
+		[self doComputationLat:latitude lon:longitude alt:altitude gpsError:gpsErr];
 	}
 }
 

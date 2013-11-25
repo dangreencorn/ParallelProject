@@ -35,9 +35,9 @@ enum AppState {
 	NSInteger numClients;
 	NSInteger dataComputed;
 	
-	NSNumber *vectorLat;
-	NSNumber *vectorLon;
-	NSNumber *vectorAlt;
+	double vectorLat;
+	double vectorLon;
+	double vectorAlt;
 	
 	// experiment times
 	NSDate *firstData;
@@ -53,7 +53,7 @@ enum AppState {
 }
 
 -(IBAction)triggerSimulation:(id)sender;
--(void)doComputationLat:(NSNumber*)latitude lon:(NSNumber*)longitude alt:(NSNumber*)altitude;
+-(void)doComputationLat:(NSNumber*)latitude lon:(NSNumber*)longitude alt:(NSNumber*)altitude gpsError:(NSNumber*)gpsError;
 
 -(void)connectWebsockets;
 -(void)disconnectWebsockets;
