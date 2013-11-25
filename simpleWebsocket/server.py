@@ -5,6 +5,7 @@ import time
 import thread
 import json
 
+
 # time benchmarks
 startTime = None
 startFinishedSendingTime = None
@@ -195,8 +196,7 @@ class DataSocket(WebSocket):
 		if startTime is not None:
 			print "---ERROR---\nClient disconnected (data) mid-experiment\n-----------"
 			startTime = None
-		
-		
+
 serverControl = SimpleWebSocketServer('', 9000, ControlSocket)
 serverData = SimpleWebSocketServer('', 9001, DataSocket)
 # create two threads as follows
