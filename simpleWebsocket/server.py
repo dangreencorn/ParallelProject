@@ -5,10 +5,12 @@ import time
 import thread
 import json
 
+
 # time benchmarks
 startTime = None
 startFinishedSendingTime = None
 endTime = None
+
 
 # count of the number of data received; will be 2*n (where n is the number of devices)
 # (because each device will send two points over the data socket: raw GPS data and then the calculated result)
@@ -138,7 +140,7 @@ class ControlSocket(WebSocket):
 		global numClientsControl
 		global startTime
 		
-		print self.address, "closed Control"
+		print self.address, "Closed Control"
 		numClientsControl -= 1
 		
 		# deal with disconnect during experiment
@@ -201,8 +203,7 @@ class DataSocket(WebSocket):
 		if startTime is not None:
 			print "---ERROR---\nClient disconnected (data) mid-experiment\n-----------"
 			startTime = None
-		
-		
+
 serverControl = SimpleWebSocketServer('', 9000, ControlSocket)
 serverData = SimpleWebSocketServer('', 9001, DataSocket)
 # create two threads as follows
