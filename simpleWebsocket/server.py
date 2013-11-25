@@ -11,6 +11,7 @@ startTime = None
 startFinishedSendingTime = None
 endTime = None
 
+
 # count of the number of data received; will be 2*n (where n is the number of devices)
 # (because each device will send two points over the data socket: raw GPS data and then the calculated result)
 dataReceived = 0
@@ -133,7 +134,7 @@ class ControlSocket(WebSocket):
 		global numClientsControl
 		global startTime
 		
-		print self.address, "closed Control"
+		print self.address, "Closed Control"
 		numClientsControl -= 1
 		
 		# deal with disconnect during experiment
