@@ -45,6 +45,12 @@ def saveResults():
 	# loop over all locations
 	for data in resultsReceived:
 		print data
+		# get the data in JSON format
+		try:
+			data = json.loads(str(data))
+			print data
+		except Exception:
+			print "Exception"
 	print "--------------------------------------------------------"
 
 # reset -- resets startTime, endTime, dataReceived, experimentType, results received

@@ -245,7 +245,7 @@
 	computationAvg /= dataComputed;
 	
 	// send computed results to server
-	NSString *resultString = [NSString stringWithFormat:@"{'vector':{'x':%f,'y':%f,'z':%f}, 'origin':{'x':%f,'y':%f,'z':%f}, 'times':{'timeSinceStart':%f, 'timeSinceData':%f, 'computationAvg':%f}, 'deviceName':'%@'}",
+	NSString *resultString = [NSString stringWithFormat:@"{\"vector\":{\"x\":%f,\"y\":%f,\"z\":%f}, \"origin\":{\"x\":%f,\"y\":%f,\"z\":%f}, \"times\":{\"timeSinceStart\":%f, \"timeSinceData\":%f, \"computationAvg\":%f}, \"deviceName\":\"%@\"}",
 							  vectorLat,
 							  vectorLon,
 							  vectorAlt,
@@ -477,7 +477,11 @@
 }
 
 -(void)webSocketDidOpen:(SRWebSocket *)webSocket {
-	NSLog(@"Opened WebSocket");
+	if (webSocket == controlSocket) {
+		NSLog(@"Opened control");
+	} else if (webSocket == dataSocket) {
+		NSLog(@"Opened data");
+	}
 	if ([self socketStateOK] && state != errorOccured) {
 		state = ready;
 		connectionStatus.text = @"Connected";
