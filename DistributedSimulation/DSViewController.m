@@ -46,7 +46,16 @@
 
 -(void)triggerSimulation:(id)sender {
 	NSLog(@"Triggering simulation");
-	NSDictionary *commandDictionary = [[NSDictionary alloc] initWithObjectsAndKeys:@"START", @"command", nil];
+	
+	NSString *expTypeString;
+	
+	if ([experimentSwitch isOn]) {
+		expTypeString = @"SERIAL";
+	} else {
+		expTypeString = @"DISTRIBUTED";
+	}
+	
+	NSDictionary *commandDictionary = [[NSDictionary alloc] initWithObjectsAndKeys:@"START", @"command", expTypeString, @"experimentType", nil];
 	
 	NSData *jsonData = [NSJSONSerialization dataWithJSONObject:commandDictionary options:0 error:nil];
 	NSString *jsonString = [[NSString alloc] initWithBytes:[jsonData bytes] length:[jsonData length] encoding:NSUTF8StringEncoding];
@@ -59,10 +68,16 @@
 	//get timestamp if first data
 	if (dataComputed == 0) {
 		firstData = [NSDate date];
+		NSLog(@"FIRST DATA");
+		dataPoints = [[NSMutableArray alloc] init];
 	}
 	dataComputed++;
 	//get start time
 	NSDate *computationStart = [NSDate date];
+	
+	// store this data point
+	NSDictionary *thisPoint = [[NSDictionary alloc] initWithObjectsAndKeys:latitude, @"latitude", longitude, @"longitude", altitude, @"altitude", gpsError, @"gpsError", nil];
+	[dataPoints addObject:thisPoint];
 	
 	// get the coords for deltas
 	CLLocationCoordinate2D coordsX;
@@ -106,10 +121,118 @@
 	computationAvg += [computationEnd timeIntervalSinceDate:computationStart];
 	
 	if (dataComputed == numClients - 1) {
-		[self sendResults];
+		if ([experimentType isEqualToString:@"DISTRIBUTED"]) {
+			[self sendResults];
+		} else {
+			[self computeOtherForces];
+		}
 	}
 	
 	
+}
+
+-(void)computeOtherForces {
+	resultVectors = [[NSMutableArray alloc] init];
+	
+	double vecLat;
+	double vecLon;
+	double vecAlt;
+	
+	NSDate *start = [NSDate date];
+	
+	for (NSDictionary *point1 in dataPoints) {
+		
+		// reset our computed vector
+		vecLat = 0;
+		vecLon = 0;
+		vecAlt = 0;
+		
+		NSDate *startVec = [NSDate date];
+		
+		for (NSDictionary *point2 in dataPoints) {
+			// for every other point
+			if (point1 != point2) {
+				// get the coords for deltas
+				CLLocationCoordinate2D coords1;
+				coords1.latitude = [[point1 objectForKey:@"latitude"] doubleValue];
+				coords1.longitude = [[point1 objectForKey:@"longitude"] doubleValue];
+				
+				CLLocationCoordinate2D coords2;
+				coords2.latitude = [[point2 objectForKey:@"latitude"] doubleValue];
+				coords2.longitude = [[point2 objectForKey:@"longitude"] doubleValue];
+				
+				CLLocationCoordinate2D coordsX;
+				coordsX.latitude = coords2.latitude;
+				coordsX.longitude = coords1.longitude;
+				
+				CLLocationCoordinate2D coordsY;
+				coordsY.latitude = coords1.latitude;
+				coordsY.longitude = coords2.longitude;
+				
+				
+				// get point for point 1
+				CLLocation *loc1 = [[CLLocation alloc] initWithCoordinate:coords1 altitude:[[point1 objectForKey:@"altitude"] doubleValue] horizontalAccuracy:[[point1 objectForKey:@"gpsError"] doubleValue] verticalAccuracy:0 timestamp:[NSDate date]];
+				
+				// get points for deltas in (x, y, z) ~ (lat, lon, alt)
+				CLLocation *otherPointX = [[CLLocation alloc] initWithCoordinate:coordsX altitude:experimentLocation.altitude horizontalAccuracy:[[point2 objectForKey:@"gpsError"] doubleValue] verticalAccuracy:0 timestamp:[NSDate date]];
+				CLLocation *otherPointY = [[CLLocation alloc] initWithCoordinate:coordsY altitude:experimentLocation.altitude horizontalAccuracy:[[point2 objectForKey:@"gpsError"] doubleValue] verticalAccuracy:0 timestamp:[NSDate date]];
+				
+				// get deltas
+				CLLocationDistance distX = [loc1 distanceFromLocation:otherPointX];
+				CLLocationDistance distY = [loc1 distanceFromLocation:otherPointY];
+				if (coords2.latitude < coords1.latitude) {
+					distX *= -1;
+				}
+				if (coords2.longitude < coords1.longitude) {
+					distY *= -1;
+				}
+				CLLocationDistance distZ = [[point2 objectForKey:@"altitude"] doubleValue] - loc1.altitude;
+				
+				NSLog(@"\nDistX: %f\nDistY: %f\nDistZ: %f\n", distX, distY, distZ);
+				// get magnitude and total distance
+				double dist = sqrt(distX * distX + distY * distY + distZ * distZ);
+				double magnitude = G_CONST * 1000 * 1000 / loc1.horizontalAccuracy  / [[point2 objectForKey:@"gpsError"] doubleValue] / (dist * dist);
+				
+				// update vectors
+				vecLat += magnitude * distX / dist;
+				vecLon += magnitude * distY / dist;
+				vecAlt += magnitude * distZ / dist;
+				
+			}
+		}
+		
+		NSDate *endVec = [NSDate date];
+		
+		NSTimeInterval timeVec = [endVec timeIntervalSinceDate:startVec];
+		// store the resulting vector and origin in a result dict
+		NSString *resultString = [NSString stringWithFormat:@"{\"vector\":{\"x\":%f,\"y\":%f,\"z\":%f}, \"origin\":{\"x\":%f,\"y\":%f,\"z\":%f}, \"time\":%f}",
+								  vecLat,
+								  vecLon,
+								  vecAlt,
+								  [[point1 objectForKey:@"latitude"] doubleValue],
+								  [[point1 objectForKey:@"longitude"] doubleValue],
+								  [[point1 objectForKey:@"altitude"] doubleValue],
+								  timeVec];
+		
+		[resultVectors addObject:resultString];
+	}
+	NSDate *end = [NSDate date];
+	NSTimeInterval totalTime = [end timeIntervalSinceDate:start];
+	
+	// build the large string to send
+	NSString *resultString = [NSString stringWithFormat:@"{\"Results\":[{\"vector\":{\"x\":%f,\"y\":%f,\"z\":%f}, \"origin\":{\"x\":%f,\"y\":%f,\"z\":%f}}",
+							  vectorLat,
+							  vectorLon,
+							  vectorAlt,
+							  experimentLocation.coordinate.latitude,
+							  experimentLocation.coordinate.longitude,
+							  experimentLocation.altitude];
+	for (NSString* str in resultVectors) {
+		resultString = [resultString stringByAppendingString:@","];
+		resultString = [resultString stringByAppendingString:str];
+	}
+	resultString = [resultString stringByAppendingString:@"]}"];
+	[dataSocket send:resultString];
 }
 
 -(void)sendResults {
@@ -200,6 +323,9 @@
 	vectorLat = 0;
 	vectorLon = 0;
 	vectorAlt = 0;
+	
+	dataPoints = Nil;
+	resultVectors = Nil;
 	
 	// re-initialize websockets
 	[self startLocationUpdates];
@@ -319,15 +445,20 @@
 		NSLog(@"COMMAND: %@", controlDictionary);
 		if ([commandString isEqualToString:@"START"]) {
 			startSignal = [NSDate date];
+			experimentType = [controlDictionary objectForKey:@"experimentType"];
 			numClients = [[controlDictionary objectForKey:@"numClients"] integerValue];
 			state = running;
 			
 			[self sendLocation];
 			
 			//special case that we computed all other locations before sending receiving start
-			if (dataComputed == numClients -1) {
-				// send our result string
-				[self sendResults];
+			if (dataComputed == numClients - 1) {
+				if ([experimentType isEqualToString:@"DISTRIBUTED"]) {
+					// send our result string
+					[self sendResults];
+				} else {
+					[self computeOtherForces];
+				}
 			}
 		} else if ([commandString isEqualToString:@"RESET"]) {
 			[self resetApp];

@@ -280,6 +280,9 @@
 				LastUpgradeCheck = 0500;
 				ORGANIZATIONNAME = "Dan Greencorn";
 				TargetAttributes = {
+					37B9AE9C183D24CD00816AB2 = {
+						DevelopmentTeam = BLPLPEFV8Q;
+					};
 					37B9AEC0183D24CD00816AB2 = {
 						TestTargetID = 37B9AE9C183D24CD00816AB2;
 					};
@@ -481,6 +484,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "DistributedSimulation/DistributedSimulation-Prefix.pch";
 				HEADER_SEARCH_PATHS = (
@@ -491,6 +495,7 @@
 				INFOPLIST_FILE = "DistributedSimulation/DistributedSimulation-Info.plist";
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				VALID_ARCHS = "arm64 armv7 armv7s armv6";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -500,6 +505,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "DistributedSimulation/DistributedSimulation-Prefix.pch";
 				HEADER_SEARCH_PATHS = (
@@ -510,6 +516,7 @@
 				INFOPLIST_FILE = "DistributedSimulation/DistributedSimulation-Info.plist";
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				VALID_ARCHS = "arm64 armv7 armv7s armv6";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;

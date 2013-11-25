@@ -24,6 +24,7 @@ enum AppState {
 	IBOutlet UILabel *alt;
 	IBOutlet UILabel *error;
 	IBOutlet UILabel *connectionStatus;
+	IBOutlet UISwitch *experimentSwitch;
 
 @private
 	//sockets and app state
@@ -34,6 +35,11 @@ enum AppState {
 	// experiment vars
 	NSInteger numClients;
 	NSInteger dataComputed;
+	
+	NSString *experimentType;
+	
+	NSMutableArray *dataPoints;
+	NSMutableArray *resultVectors;
 	
 	double vectorLat;
 	double vectorLon;
