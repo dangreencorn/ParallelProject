@@ -5,30 +5,40 @@ import time
 import thread
 import json
 
+# time benchmarks
 startTime = None
+startFinishedSendingTime = None
 endTime = None
 
+# count of the number of data received; will be 2*n (where n is the number of devices)
+# (because each device will send two points over the data socket: raw GPS data and then the calculated result)
 dataReceived = 0
 
+# whether we are performing distributed or local calculations
 experimentType = ""
+
+# collection of all final calculated results received from the client devices
 resultsReceived = []
 
-
+# used to make sure that we have the same number of connections over control and data sockets
 numClientsControl = 0
 numClientsData = 0
 
+# a reference to the server (ourself)
 server = None
 
 # saveResults -- saves the experiment data to a file
 # TODO: implementation
 def saveResults():
 	global startTime
+	global startFinishedSendingTime
 	global endTime
 	global resultsReceived
 	print "--------------------------------------------------------"
 	print "-- RESULTS ---------------------------------------------"
 	print "--------------------------------------------------------"
 	print "Start Time: %s" % startTime
+	print "Start Time: %s" % startFinishedSendingTime
 	print "End Time:   %s" % endTime
 	print "--------------------------------------------------------"
 	print "Locations:"
@@ -58,7 +68,7 @@ def reset():
 
 
 
-# not used anymore -- GOOD Example code
+# not used any more -- GOOD Example code
 class SimpleEcho(WebSocket):
 
 	def handleMessage(self):
@@ -79,6 +89,7 @@ class SimpleEcho(WebSocket):
 # logic for handling the control socket
 class ControlSocket(WebSocket):
 	
+	# handles an incoming message to the socket
 	def handleMessage(self):
 		global numClientsControl
 		global startTime
@@ -88,20 +99,29 @@ class ControlSocket(WebSocket):
 		
 		if self.data is None:
 			self.data = ''
+		
+		# get the data in JSON format
 		try:
 			data = json.loads(str(self.data))
 			print data
 		except Exception:
 			print "Exception"
-
+		
+		# branch based on command
 		if data['command'] == 'START':
+			# start command received
+			# record the current time as the start of the experiment
 			startTime = time.time()
 			data['numClients'] = numClientsControl
 			print "%s Starting Experiment with %s devices" % (startTime, numClientsControl)
-
-		# forward message to all devices (including origin device)
-		for conn in self.server.connections.itervalues():
-			conn.sendMessage(str(data))
+			
+			# forward the start message to all devices (including origin device) to signal them to snapshot data and perform their calculations
+			for conn in self.server.connections.itervalues():
+				conn.sendMessage(str(data))
+			
+			# record the time after we've sent all data - we use this to benchmark communication speed
+			# TODO: check to see if sendMessage is synchronous or asynchronous (i.e. is it blocking until the data has sent or not; if it isn't blocking, this metric will be flawed)
+			startFinishedSendingTime = time.time()
 
 	def handleConnected(self):
 		global numClientsControl
@@ -137,17 +157,24 @@ class DataSocket(WebSocket):
 		print "DATA MESSAGE ----------------------"
 		print self.data
 		
+		# branch based on the data series we are expecting (either raw GPS to be forwarded to other devices or calculated results)
+		# out of 2*n messages that will be received, the first n are raw GPS, the second n are calculated results
 		if startTime is not None and dataReceived < numClientsData:
+			# we are in the first n received messages; forward the data to all other devices
 			dataReceived += 1
 			print "Have data from %s devices" % dataReceived
 			print "Data: %s" % str(self.data)
+			
 			# forward message to all devices (except origin device)
 			for conn in self.server.connections.itervalues():
 				if conn != self:
 					conn.sendMessage(str(self.data))
 		elif startTime is not None and dataReceived == numClientsData:
+			# we are in the second n received messages; store the results
 			resultsReceived.append(self.data)
+			
 			if len(resultsReceived) == numClientsData:
+				# we have finished collection; save end experiment timing, save, and reset the experiment
 				endTime = time.time()
 				print "%s Experiment complete" % endTime
 				saveResults()
@@ -168,10 +195,11 @@ class DataSocket(WebSocket):
 		if startTime is not None:
 			print "---ERROR---\nClient disconnected (data) mid-experiment\n-----------"
 			startTime = None
-
+		
+		
 serverControl = SimpleWebSocketServer('', 9000, ControlSocket)
 serverData = SimpleWebSocketServer('', 9001, DataSocket)
-# Create two threads as follows
+# create two threads as follows
 try:
 	thread.start_new_thread( serverControl.serveforever, () )
 except:
