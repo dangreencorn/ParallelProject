@@ -104,7 +104,7 @@
 	}
 	CLLocationDistance distZ = [altitude doubleValue] - experimentLocation.altitude;
 	
-	NSLog(@"\nDistX: %f\nDistY: %f\nDistZ: %f\n", distX, distY, distZ);
+	NSLog(@"\nDistX: %.12f\nDistY: %.12f\nDistZ: %.12f\n", distX, distY, distZ);
 	// get magnitude and total distance
 	double dist = sqrt(distX * distX + distY * distY + distZ * distZ);
 	double magnitude = G_CONST * 1000 * 1000 / experimentLocation.horizontalAccuracy  / [gpsError doubleValue] / (dist * dist);
@@ -121,6 +121,8 @@
 	computationAvg += [computationEnd timeIntervalSinceDate:computationStart];
 	
 	if (dataComputed == numClients - 1) {
+		experimentPoint = [[NSDictionary alloc] initWithObjectsAndKeys:[NSNumber numberWithDouble:experimentLocation.coordinate.latitude], @"latitude", [NSNumber numberWithDouble:experimentLocation.coordinate.longitude], @"longitude", [NSNumber numberWithDouble:experimentLocation.altitude], @"altitude", [NSNumber numberWithDouble:experimentLocation.horizontalAccuracy], @"gpsError", nil];
+		[dataPoints addObject:experimentPoint];
 		if ([experimentType isEqualToString:@"DISTRIBUTED"]) {
 			[self sendResults];
 		} else {
@@ -140,8 +142,10 @@
 	
 	NSDate *start = [NSDate date];
 	
+	// for each data point (except this one)
 	for (NSDictionary *point1 in dataPoints) {
-		
+		if (point1 != experimentPoint) {
+			
 		// reset our computed vector
 		vecLat = 0;
 		vecLon = 0;
@@ -149,9 +153,10 @@
 		
 		NSDate *startVec = [NSDate date];
 		
+		// for every other data point
 		for (NSDictionary *point2 in dataPoints) {
-			// for every other point
 			if (point1 != point2) {
+				
 				// get the coords for deltas
 				CLLocationCoordinate2D coords1;
 				coords1.latitude = [[point1 objectForKey:@"latitude"] doubleValue];
@@ -188,7 +193,7 @@
 				}
 				CLLocationDistance distZ = [[point2 objectForKey:@"altitude"] doubleValue] - loc1.altitude;
 				
-				NSLog(@"\nDistX: %f\nDistY: %f\nDistZ: %f\n", distX, distY, distZ);
+				NSLog(@"\nDistX: %.12f\nDistY: %.12f\nDistZ: %.12f\n", distX, distY, distZ);
 				// get magnitude and total distance
 				double dist = sqrt(distX * distX + distY * distY + distZ * distZ);
 				double magnitude = G_CONST * 1000 * 1000 / loc1.horizontalAccuracy  / [[point2 objectForKey:@"gpsError"] doubleValue] / (dist * dist);
@@ -205,35 +210,40 @@
 		
 		NSTimeInterval timeVec = [endVec timeIntervalSinceDate:startVec];
 		// store the resulting vector and origin in a result dict
-		NSString *resultString = [NSString stringWithFormat:@"{\"vector\":{\"x\":%f,\"y\":%f,\"z\":%f}, \"origin\":{\"x\":%f,\"y\":%f,\"z\":%f}, \"time\":%f}",
-								  vecLat,
-								  vecLon,
-								  vecAlt,
-								  [[point1 objectForKey:@"latitude"] doubleValue],
-								  [[point1 objectForKey:@"longitude"] doubleValue],
-								  [[point1 objectForKey:@"altitude"] doubleValue],
-								  timeVec];
+			NSDictionary *vectorDict = [[NSDictionary alloc] initWithObjectsAndKeys:[NSNumber numberWithDouble:vecLat], @"x", [NSNumber numberWithDouble:vecLon], @"y", [NSNumber numberWithDouble:vecAlt], @"z", nil];
+			NSDictionary *originDict = [[NSDictionary alloc] initWithObjectsAndKeys:[point1 objectForKey:@"latitude"], @"x", [point1 objectForKey:@"longitude"], @"y", [point1 objectForKey:@"altitude"], @"z", nil];
+			NSDictionary *resultDict = [[NSDictionary alloc] initWithObjectsAndKeys:vectorDict, @"vector", originDict, @"origin", [NSNumber numberWithDouble:timeVec], @"time", nil];
 		
-		[resultVectors addObject:resultString];
+		[resultVectors addObject:resultDict];
+		}
 	}
 	NSDate *end = [NSDate date];
-	NSTimeInterval totalTime = [end timeIntervalSinceDate:start];
+	NSTimeInterval timeOthers = [end timeIntervalSinceDate:start];
+	
+	// add this point's vector to resultDict (at begining)
+	NSDictionary *thisVectorDict = [[NSDictionary alloc] initWithObjectsAndKeys:[NSNumber numberWithDouble:vectorLat], @"x", [NSNumber numberWithDouble:vectorLon], @"y", [NSNumber numberWithDouble:vectorAlt], @"z", nil];
+	NSDictionary *thisOriginDict = [[NSDictionary alloc] initWithObjectsAndKeys:[NSNumber numberWithDouble:experimentLocation.coordinate.latitude], @"x", [NSNumber numberWithDouble:experimentLocation.coordinate.longitude], @"y", [NSNumber numberWithDouble:experimentLocation.altitude], @"z", nil];
+	NSDictionary *thisResultDict = [[NSDictionary alloc] initWithObjectsAndKeys:thisVectorDict, @"vector", thisOriginDict, @"origin", nil];
+	
+	[resultVectors insertObject:thisResultDict atIndex:0];
 	
 	// build the large string to send
-	NSString *resultString = [NSString stringWithFormat:@"{\"Results\":[{\"vector\":{\"x\":%f,\"y\":%f,\"z\":%f}, \"origin\":{\"x\":%f,\"y\":%f,\"z\":%f}}",
-							  vectorLat,
-							  vectorLon,
-							  vectorAlt,
-							  experimentLocation.coordinate.latitude,
-							  experimentLocation.coordinate.longitude,
-							  experimentLocation.altitude];
-	for (NSString* str in resultVectors) {
-		resultString = [resultString stringByAppendingString:@","];
-		resultString = [resultString stringByAppendingString:str];
+	NSDictionary *resultDictToSend = [[NSDictionary alloc] initWithObjectsAndKeys:
+									  resultVectors, @"Results",
+									  [UIDevice currentDevice].name, @"deviceName",
+									  [NSNumber numberWithDouble:timeOthers], @"timeOthers",
+									  [NSNumber numberWithDouble:[end timeIntervalSinceDate:firstData]], @"dataToEnd",
+									  [NSNumber numberWithDouble:[end timeIntervalSinceDate:startSignal]], @"startToEnd",
+									  [NSNumber numberWithDouble:-1], @"firstDataToAllData",
+									  [NSNumber numberWithDouble:-1], @"startToAllData",nil];
+	NSError *err;
+	NSData *jsonData = [NSJSONSerialization dataWithJSONObject:resultDictToSend options:0 error:&err];
+	
+	if (err) {
+		NSLog(@"%@", [err localizedDescription]);
 	}
-	resultString = [resultString stringByAppendingString:@"]"];
-	NSString *timeString = [NSString stringWithFormat:@", \"deviceName\":\"%@\", \"timeOthers\": -1, \"dataToEnd\": -1, \"startToEnd\": -1, \"firstDataToAllData\": -1, \"startToAllData\": -1}", [UIDevice currentDevice].name];
-	resultString = [resultString stringByAppendingString:timeString];
+	NSString *resultString = [[NSString alloc] initWithBytes:[jsonData bytes] length:[jsonData length] encoding:NSUTF8StringEncoding];
+	NSLog(@"RESULTSTRING: %@", resultString);
 	[dataSocket send:resultString];
 }
 
@@ -247,7 +257,7 @@
 	computationAvg /= dataComputed;
 	
 	// send computed results to server
-	NSString *resultString = [NSString stringWithFormat:@"{\"vector\":{\"x\":%f,\"y\":%f,\"z\":%f}, \"origin\":{\"x\":%f,\"y\":%f,\"z\":%f}, \"startToEnd\":%f, \"dataToEnd\":%f, \"avgComputationTime\":%f, \"startToAllData\": -1, \"firstDataToAllData\": -1, \"deviceName\":\"%@\"}",
+	NSString *resultString = [NSString stringWithFormat:@"{\"vector\":{\"x\":%.12f,\"y\":%.12f,\"z\":%.12f}, \"origin\":{\"x\":%.12f,\"y\":%.12f,\"z\":%.12f}, \"startToEnd\":%.12f, \"dataToEnd\":%.12f, \"avgComputationTime\":%.12f, \"startToAllData\": -1, \"firstDataToAllData\": -1, \"deviceName\":\"%@\"}",
 							  vectorLat,
 							  vectorLon,
 							  vectorAlt,
@@ -258,6 +268,32 @@
 							  timeSinceData,
 							  computationAvg,
 							  [UIDevice currentDevice].name ];
+	
+	NSDictionary *vectorDict = [[NSDictionary alloc] initWithObjectsAndKeys:[NSNumber numberWithDouble:vectorLat], @"x",
+								[NSNumber numberWithDouble:vectorLon], @"y",
+								[NSNumber numberWithDouble:vectorAlt], @"z", nil];
+	NSDictionary *originDict = [[NSDictionary alloc] initWithObjectsAndKeys:[NSNumber numberWithDouble:experimentLocation.coordinate.latitude], @"x",
+								[NSNumber numberWithDouble:experimentLocation.coordinate.longitude], @"y",
+								[NSNumber numberWithDouble:experimentLocation.altitude], @"z", nil];
+	
+	NSDictionary *resultDict = [[NSDictionary alloc] initWithObjectsAndKeys:vectorDict, @"vector",
+								originDict, @"origin",
+								[NSNumber numberWithDouble:timeSinceStart], @"startToEnd",
+								[NSNumber numberWithDouble:timeSinceData], @"dataToEnd",
+								[NSNumber numberWithDouble:computationAvg], @"avgComputationTime",
+								[NSNumber numberWithDouble:-1], @"startToAllData",
+								[NSNumber numberWithDouble:-1], @"firstDataToAllData",
+								[UIDevice currentDevice].name, @"deviceName", nil];
+	
+	NSError *err;
+	NSData *jsonData = [NSJSONSerialization dataWithJSONObject:resultDict options:0 error:&err];
+	
+	if (err) {
+		NSLog(@"ERROR SENDING DATA: %@", [err localizedDescription]);
+	}
+	
+	resultString = [[NSString alloc] initWithBytes:[jsonData bytes] length:[jsonData length] encoding:NSUTF8StringEncoding];
+	
 	[dataSocket send:resultString];
 	
 	// reset all state variables
@@ -276,7 +312,8 @@
 	
 	NSDictionary *locationDictionary = [[NSDictionary alloc] initWithObjectsAndKeys: numLat, @"lat",
 										numLon, @"lon",
-										numAlt, @"alt", numGps, @"gpsError", nil];
+										numAlt, @"alt",
+										numGps, @"gpsError", nil];
 	NSData *jsonData = [NSJSONSerialization dataWithJSONObject:locationDictionary options:0 error:nil];
 	NSString *locationString = [[NSString alloc] initWithBytes:[jsonData bytes] length:[jsonData length] encoding:NSUTF8StringEncoding];
 	[dataSocket send:locationString];
@@ -362,10 +399,10 @@
 	//get most recent location
 	location = [locations lastObject];
 	
-	lat.text = [NSString stringWithFormat:@"%f", location.coordinate.latitude ];
-	lon.text = [NSString stringWithFormat:@"%f", location.coordinate.longitude ];
-	alt.text = [NSString stringWithFormat:@"%f", location.altitude ];
-	error.text = [NSString stringWithFormat:@"%f", location.horizontalAccuracy ];
+	lat.text = [NSString stringWithFormat:@"%.12f", location.coordinate.latitude ];
+	lon.text = [NSString stringWithFormat:@"%.12f", location.coordinate.longitude ];
+	alt.text = [NSString stringWithFormat:@"%.12f", location.altitude ];
+	error.text = [NSString stringWithFormat:@"%.12f", location.horizontalAccuracy ];
 }
 	
 	

@@ -51,29 +51,29 @@ def saveResults():
 			data = json.loads(str(data))
 			if experimentType == "SERIAL":
 				print "-- %s -------------------------------------" % data['deviceName']
-				print "   | startToAllData:        %f" % data['startToAllData']
-				print "   | firstDataToAllData:    %f" % data['firstDataToAllData']
-				print "   | startToEnd:            %f" % data['startToEnd']
-				print "   | dataToEnd:             %f" % data['dataToEnd']
-				print "   | time N-1 computations: %f" % data['timeOthers']
+				print "   | startToAllData:        %.12f" % data['startToAllData']
+				print "   | firstDataToAllData:    %.12f" % data['firstDataToAllData']
+				print "   | startToEnd:            %.12f" % data['startToEnd']
+				print "   | dataToEnd:             %.12f" % data['dataToEnd']
+				print "   | time N-1 computations: %.12f" % data['timeOthers']
 				print "   |- Vectors -------------------------------------"
 				
 				
 				for result in data['Results']:
-					print "   | vector -> x: %f y: %f z: %f | origin -> x: %f y: %f z: %f |" % (result['vector']['x'], result['vector']['y'], result['vector']['z'], result['origin']['x'], result['origin']['y'], result['origin']['z']),
+					print "   | vector -> x: %.12f y: %.12f z: %.12f | origin -> x: %.12f y: %.12f z: %.12f |" % (result['vector']['x'], result['vector']['y'], result['vector']['z'], result['origin']['x'], result['origin']['y'], result['origin']['z']),
 					if result.has_key('time'):
-						print " time: %f" % result['time']
+						print " time: %.12f" % result['time']
 					else:
 						print ""
 			elif experimentType == "DISTRIBUTED":
 				print "-- %s -------------------------------------" % data['deviceName']
-				print "   | startToAllData:     %f" % data['startToAllData']
-				print "   | firstDataToAllData: %f" % data['firstDataToAllData']
-				print "   | startToEnd:         %f" % data['startToEnd']
-				print "   | dataToEnd:          %f" % data['dataToEnd']
-				print "   | avgComputationTime: %f (time to compute influence of one other body)" % data['avgComputationTime']
+				print "   | startToAllData:     %.12f" % data['startToAllData']
+				print "   | firstDataToAllData: %.12f" % data['firstDataToAllData']
+				print "   | startToEnd:         %.12f" % data['startToEnd']
+				print "   | dataToEnd:          %.12f" % data['dataToEnd']
+				print "   | avgComputationTime: %.12f (time to compute influence of one other body)" % data['avgComputationTime']
 				print "   |- Vector --------------------------------------"
-				print "   | vector -> x: %f y: %f z: %f | origin -> x: %f y: %f z: %f |" % (data['vector']['x'], data['vector']['y'], data['vector']['z'], data['origin']['x'], data['origin']['y'], data['origin']['z'])
+				print "   | vector -> x: %.12f y: %.12f z: %.12f | origin -> x: %.12f y: %.12f z: %.12f |" % (data['vector']['x'], data['vector']['y'], data['vector']['z'], data['origin']['x'], data['origin']['y'], data['origin']['z'])
 				
 				
 				

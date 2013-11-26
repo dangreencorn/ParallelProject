@@ -38,6 +38,7 @@ enum AppState {
 	
 	NSString *experimentType;
 	
+	NSDictionary *experimentPoint;
 	NSMutableArray *dataPoints;
 	NSMutableArray *resultVectors;
 	
