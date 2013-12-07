@@ -49,6 +49,7 @@ enum AppState {
 	// experiment times
 	NSDate *firstData;
 	NSDate *startSignal;
+	NSDate *allData;
 	
 	NSTimeInterval computationAvg;
 	
@@ -56,6 +57,9 @@ enum AppState {
 	CLLocationManager *locationManager;
 	CLLocation *location;
 	CLLocation *experimentLocation;
+	
+	// dispatch queue
+	dispatch_queue_t myQueue;
 	
 }
 

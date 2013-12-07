@@ -40,7 +40,7 @@ def saveResults():
 	print "-- RESULTS - %s" % experimentType
 	print "--------------------------------------------------------"
 	print "Start Time: %s" % startTime
-	print "Start Time: %s" % startFinishedSendingTime
+	print "Start Sending Time: %s" % (startFinishedSendingTime - startTime)
 	print "End Time:   %s" % endTime
 	print "--------------------------------------------------------"
 	print "Results by Device:"
@@ -89,12 +89,14 @@ def reset():
 	global resultsReceived
 	global dataReceived
 	global startTime
+	global startFinishedSendingTime
 	global endTime
 	global server
 	experimentType = ""
 	resultsReceived = []
 	dataReceived = 0
 	startTime = None
+	startFinishedSendingTime = None
 	endTime = None
 
 	for conn in server.connections.itervalues():
@@ -126,6 +128,7 @@ class ControlSocket(WebSocket):
 	# handles an incoming message to the socket
 	def handleMessage(self):
 		global numClientsControl
+		global startFinishedSendingTime
 		global startTime
 		global server
 		global experimentType
@@ -200,7 +203,7 @@ class DataSocket(WebSocket):
 			# we are in the first n received messages; forward the data to all other devices
 			dataReceived += 1
 			print "Have data from %s devices" % dataReceived
-			print "Data: %s" % str(self.data)
+			#print "Data: %s" % str(self.data)
 			
 			# forward message to all devices (except origin device)
 			for conn in self.server.connections.itervalues():

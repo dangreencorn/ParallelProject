@@ -27,6 +27,7 @@
 	// initialize appstate
 	state = notReady;
 	connectionStatus.text = @"Not Connected";
+	myQueue = dispatch_queue_create("ca.dangreencorn.parallel", DISPATCH_QUEUE_SERIAL);
 	
 	// connect to websockets
 	[self connectWebsockets];
@@ -67,11 +68,24 @@
 	
 	//get timestamp if first data
 	if (dataComputed == 0) {
+		
+		// thread-safe access to experiment location
+		// sync up with main thread to access
+		dispatch_sync(dispatch_get_main_queue(), ^{
+			if (experimentLocation == Nil) {
+				experimentLocation = location;
+			}
+		});
+		
 		firstData = [NSDate date];
 		NSLog(@"FIRST DATA");
 		dataPoints = [[NSMutableArray alloc] init];
 	}
 	dataComputed++;
+	if (dataComputed == numClients -1) {
+		allData = [NSDate date];
+	}
+	
 	//get start time
 	NSDate *computationStart = [NSDate date];
 	
@@ -121,7 +135,10 @@
 	computationAvg += [computationEnd timeIntervalSinceDate:computationStart];
 	
 	if (dataComputed == numClients - 1) {
-		experimentPoint = [[NSDictionary alloc] initWithObjectsAndKeys:[NSNumber numberWithDouble:experimentLocation.coordinate.latitude], @"latitude", [NSNumber numberWithDouble:experimentLocation.coordinate.longitude], @"longitude", [NSNumber numberWithDouble:experimentLocation.altitude], @"altitude", [NSNumber numberWithDouble:experimentLocation.horizontalAccuracy], @"gpsError", nil];
+		experimentPoint = [[NSDictionary alloc] initWithObjectsAndKeys:[NSNumber numberWithDouble:experimentLocation.coordinate.latitude], @"latitude",
+						   [NSNumber numberWithDouble:experimentLocation.coordinate.longitude], @"longitude",
+						   [NSNumber numberWithDouble:experimentLocation.altitude], @"altitude",
+						   [NSNumber numberWithDouble:experimentLocation.horizontalAccuracy], @"gpsError", nil];
 		[dataPoints addObject:experimentPoint];
 		if ([experimentType isEqualToString:@"DISTRIBUTED"]) {
 			[self sendResults];
@@ -234,8 +251,8 @@
 									  [NSNumber numberWithDouble:timeOthers], @"timeOthers",
 									  [NSNumber numberWithDouble:[end timeIntervalSinceDate:firstData]], @"dataToEnd",
 									  [NSNumber numberWithDouble:[end timeIntervalSinceDate:startSignal]], @"startToEnd",
-									  [NSNumber numberWithDouble:-1], @"firstDataToAllData",
-									  [NSNumber numberWithDouble:-1], @"startToAllData",nil];
+									  [NSNumber numberWithDouble:[allData timeIntervalSinceDate:firstData]], @"firstDataToAllData",
+									  [NSNumber numberWithDouble:[allData timeIntervalSinceDate:startSignal]], @"startToAllData",nil];
 	NSError *err;
 	NSData *jsonData = [NSJSONSerialization dataWithJSONObject:resultDictToSend options:0 error:&err];
 	
@@ -257,18 +274,6 @@
 	computationAvg /= dataComputed;
 	
 	// send computed results to server
-	NSString *resultString = [NSString stringWithFormat:@"{\"vector\":{\"x\":%.12f,\"y\":%.12f,\"z\":%.12f}, \"origin\":{\"x\":%.12f,\"y\":%.12f,\"z\":%.12f}, \"startToEnd\":%.12f, \"dataToEnd\":%.12f, \"avgComputationTime\":%.12f, \"startToAllData\": -1, \"firstDataToAllData\": -1, \"deviceName\":\"%@\"}",
-							  vectorLat,
-							  vectorLon,
-							  vectorAlt,
-							  experimentLocation.coordinate.latitude,
-							  experimentLocation.coordinate.longitude,
-							  experimentLocation.altitude,
-							  timeSinceStart,
-							  timeSinceData,
-							  computationAvg,
-							  [UIDevice currentDevice].name ];
-	
 	NSDictionary *vectorDict = [[NSDictionary alloc] initWithObjectsAndKeys:[NSNumber numberWithDouble:vectorLat], @"x",
 								[NSNumber numberWithDouble:vectorLon], @"y",
 								[NSNumber numberWithDouble:vectorAlt], @"z", nil];
@@ -281,8 +286,8 @@
 								[NSNumber numberWithDouble:timeSinceStart], @"startToEnd",
 								[NSNumber numberWithDouble:timeSinceData], @"dataToEnd",
 								[NSNumber numberWithDouble:computationAvg], @"avgComputationTime",
-								[NSNumber numberWithDouble:-1], @"startToAllData",
-								[NSNumber numberWithDouble:-1], @"firstDataToAllData",
+								[NSNumber numberWithDouble:[allData timeIntervalSinceDate:startSignal]], @"startToAllData",
+								[NSNumber numberWithDouble:[allData timeIntervalSinceDate:firstData]], @"firstDataToAllData",
 								[UIDevice currentDevice].name, @"deviceName", nil];
 	
 	NSError *err;
@@ -292,7 +297,7 @@
 		NSLog(@"ERROR SENDING DATA: %@", [err localizedDescription]);
 	}
 	
-	resultString = [[NSString alloc] initWithBytes:[jsonData bytes] length:[jsonData length] encoding:NSUTF8StringEncoding];
+	NSString *resultString = [[NSString alloc] initWithBytes:[jsonData bytes] length:[jsonData length] encoding:NSUTF8StringEncoding];
 	
 	[dataSocket send:resultString];
 	
@@ -302,7 +307,9 @@
 	
 -(void)sendLocation {
 	// get last updated location
-	experimentLocation = location;
+	if (experimentLocation == Nil) {
+		experimentLocation = location;
+	}
 	
 	// build location JSON string for data passing
 	NSNumber *numLat = [NSNumber numberWithDouble:experimentLocation.coordinate.latitude];
@@ -363,8 +370,19 @@
 	vectorLon = 0;
 	vectorAlt = 0;
 	
+	experimentType = Nil;
+	
+	experimentPoint = Nil;
 	dataPoints = Nil;
 	resultVectors = Nil;
+	
+	firstData = Nil;
+	startSignal = Nil;
+	allData = Nil;
+	
+	computationAvg = 0;
+	
+	experimentLocation = Nil;
 	
 	// re-initialize websockets
 	[self startLocationUpdates];
@@ -505,13 +523,16 @@
 		
 	} else if (webSocket == dataSocket) {
 		// data message
-		NSLog(@"DATA MESSAGE: %@", msg);
-		NSNumber *latitude = [controlDictionary objectForKey:@"lat"];
-		NSNumber *longitude = [controlDictionary objectForKey:@"lon"];
-		NSNumber *altitude = [controlDictionary objectForKey:@"alt"];
-		NSNumber *gpsErr = [controlDictionary objectForKey:@"gpsError"];
-		
-		[self doComputationLat:latitude lon:longitude alt:altitude gpsError:gpsErr];
+		dispatch_async(myQueue, ^{
+			NSLog(@"DATA MESSAGE: %@", msg);
+			NSNumber *latitude = [controlDictionary objectForKey:@"lat"];
+			NSNumber *longitude = [controlDictionary objectForKey:@"lon"];
+			NSNumber *altitude = [controlDictionary objectForKey:@"alt"];
+			NSNumber *gpsErr = [controlDictionary objectForKey:@"gpsError"];
+			
+			[self doComputationLat:latitude lon:longitude alt:altitude gpsError:gpsErr];
+
+		});
 	}
 }
 
